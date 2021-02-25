@@ -1,0 +1,129 @@
+<# DNS Zone Query and Trust Builder - Ver 1
+1. Create/Check Backup Folder
+2. Get/Check if DNS Zone Exists
+3. Backup DNS Zone
+4. Remove DNS Zone
+5. Create Conditional Forwarders
+6. Create Two-Way Forest Trust
+8. Verify Forest Trust
+Ross Edwardson- 02/24/2021
+#>
+
+# Variables
+
+$DNSServer = "*"
+$DNSServer1 = "*"
+$DNSServer2 = "*"
+# $DNSServerB = "*"
+$ZoneName = "*"
+$ZoneNameB = "*"
+$FolderPath = "C:\Backup\"
+$RemoteAdmin = "#"
+$RemoteAdminPassword = Get-Content '*.txt' | ConvertTo-SecureString
+$RemoteContext = New-Object -TypeName "System.DirectoryServices.ActiveDirectory.DirectoryContext" -ArgumentList @( "Forest", $ZoneName, $RemoteAdmin, $RemoteAdminPassword)
+$MasterServers = "*", "*"
+$ReplicationScope = "Forest"
+$UserCredentialA = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdmin,$RemoteAdminPassword
+$RemoteAdminB = "*"
+$RemoteAdminPasswordB = Get-Content '*.txt' | ConvertTo-SecureString
+$RemoteContextB = New-Object -TypeName "System.DirectoryServices.ActiveDirectory.DirectoryContext" -ArgumentList @( "Forest", $ZoneNameB, $RemoteAdminB, $RemoteAdminPasswordB)
+ 
+
+# Script Start
+
+# Create and Check for Backup Folder
+
+if (-not (Test-Path C:\Backup)) {
+    Write-Host "Directory $FolderPath does not exist - creating directory"
+    New-Item -Path $FolderPath -ItemType "Directory"
+}
+else {
+    Write-Error "Folder Exists"
+    Write-Host "Moving On"
+}
+
+#Create Backup File
+
+$FileSuffix = (get-date).toString('yyyyMMddHHmm')
+$BackupPath = $FolderPath + $ZoneName + "-" + "Backup" + "_" + $FileSuffix + ".txt"
+$BackupFile = $ZoneName + "-" + "Backup" + "_" + $FileSuffix + ".txt"
+New-Item -ItemType "File" -Path $FolderPath -Name "$BackupFile"
+write-host "Output file written to : $BackupPath"
+
+# Check if DNS Zone Exists - If it does Create Backup
+
+$DNSZoneCheck = @(Get-DNSServerZone -ComputerName $DNSServer)
+if (($DNSZoneCheck).ZoneName -contains "$ZoneName") {
+    #write-host "Zone $ZoneName exists"
+    Export-DNSServerZone -Name "$ZoneName" -FileName "$BackupPath"
+}
+
+else {
+    throw "Zone $ZoneName does not exist"
+}
+
+# Remove DNS Zone
+
+try {
+Remove-DNSServerZone -ComputerName $DNSServer -Name $ZoneName -Verbose
+Remove-DNSServerZone -ComputerName $DNSServer1 -Name $ZoneName -Verbose
+Remove-DNSServerZone -ComputerName $DNSServer2 -Name $ZoneName -Verbose
+}
+else {
+    throw "Removing DNS Zone $ZoneName Failed"
+}
+
+# Create Conditional Forwarders Domain A
+
+try{
+    Add-DNSServerConditionalForwarderZone -ComputerName $DNSServer -Name $ZoneName -ReplicationScope $ReplicationScope -MasterServers $MasterServers
+}
+catch {
+    Write-Error "Create Forwarder failed for: $ZoneName"
+}
+
+# Create Domain Trust - Domain A -> Domain B
+
+try {
+    $RemoteForest = [System.DirectoryServices.ActiveDirectory.Forest]::getForest($RemoteContext)
+    Write-Host "GetRemoteForest: Succeeded for domain $($RemoteForest)"
+}
+catch {
+    Write-Error "GetRemoteForest: Failed:`n`tError: $($($_.Exception).Message)"
+}
+
+Write-Host "Connected to Remote forest: $($RemoteForest.Name)"
+$Localforest=[System.DirectoryServices.ActiveDirectory.Forest]::getCurrentForest()
+Write-Host "Connected to Local forest: $($Localforest.Name)"
+
+try {
+    $LocalForest.CreateTrustRelationship($RemoteForest,"Bidirectional")
+    Write-Host "CreateTrustRelationship: Succeeded for domain $($RemoteForest)"
+}
+catch {
+    Write-Error "CreateTrustRelationship: Failed for domain $($RemoteForest)`n`tError: $($($_.Exception).Message)"
+}
+
+# Create Domain Trust - Domain B -> Domain A
+
+Invoke-Command -ComputerName $DNSServerB -Credential ($UserCredentialA) -ScriptBlock {
+try {
+    $RemoteForestB = [System.DirectoryServices.ActiveDirectory.Forest]::getForest($RemoteContextB)
+    Write-Host "GetRemoteForest: Succeeded for domain $($RemoteForest)"
+}
+
+catch {
+    Write-Error "GetRemoteForest: Failed:`n`tError: $($($_.Exception).Message)"
+}
+
+Write-Host "Connected to Remote forest: $($RemoteForestB.Name)"
+$Localforest=[System.DirectoryServices.ActiveDirectory.Forest]::getCurrentForest()
+Write-Host "Connected to Local forest: $($Localforest.Name)"
+try {
+    $LocalForest.CreateTrustRelationship($RemoteForestB,"Bidirectional")
+    Write-Host "CreateTrustRelationship: Succeeded for domain $($RemoteForestB)"
+}
+catch {
+    Write-Error "CreateTrustRelationship: Failed for domain $($RemoteForestB)`n`tError: $($($_.Exception).Message)"
+}
+}
