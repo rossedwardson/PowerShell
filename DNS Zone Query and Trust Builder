@@ -127,3 +127,5 @@ catch {
     Write-Error "CreateTrustRelationship: Failed for domain $($RemoteForestB)`n`tError: $($($_.Exception).Message)"
 }
 }
+
+# Verify Trust is built
