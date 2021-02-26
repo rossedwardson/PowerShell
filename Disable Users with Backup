@@ -11,7 +11,7 @@ $SearchBase = "*"
 $RemoteAdminB = "*"
 $RemoteAdminPasswordB = Get-Content '*\Savedcred.txt' | ConvertTo-SecureString
 $UserCredential = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdminB,$RemoteAdminPasswordB
-$LogFile = "*"
+$LogPath = "*"
 
 # Script Start
 
