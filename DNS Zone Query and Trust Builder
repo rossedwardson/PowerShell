@@ -32,7 +32,6 @@ $RemoteContextB = New-Object -TypeName "System.DirectoryServices.ActiveDirectory
 # Script Start
 
 # Create and Check for Backup Folder
-
 if (-not (Test-Path C:\Backup)) {
     Write-Host "Directory $FolderPath does not exist - creating directory"
     New-Item -Path $FolderPath -ItemType "Directory"
@@ -42,8 +41,7 @@ else {
     Write-Host "Moving On"
 }
 
-#Create Backup File
-
+# Create Backup File
 $FileSuffix = (get-date).toString('yyyyMMddHHmm')
 $BackupPath = $FolderPath + $ZoneName + "-" + "Backup" + "_" + $FileSuffix + ".txt"
 $BackupFile = $ZoneName + "-" + "Backup" + "_" + $FileSuffix + ".txt"
@@ -51,30 +49,36 @@ New-Item -ItemType "File" -Path $FolderPath -Name "$BackupFile"
 write-host "Output file written to : $BackupPath"
 
 # Check if DNS Zone Exists - If it does Create Backup
-
 $DNSZoneCheck = @(Get-DNSServerZone -ComputerName $DNSServer)
 if (($DNSZoneCheck).ZoneName -contains "$ZoneName") {
     #write-host "Zone $ZoneName exists"
     Export-DNSServerZone -Name "$ZoneName" -FileName "$BackupPath"
 }
-
 else {
     throw "Zone $ZoneName does not exist"
 }
 
-# Remove DNS Zone
-
+#  Remove DNS Zone
 try {
 Remove-DNSServerZone -ComputerName $DNSServer -Name $ZoneName -Verbose
-Remove-DNSServerZone -ComputerName $DNSServer1 -Name $ZoneName -Verbose
-Remove-DNSServerZone -ComputerName $DNSServer2 -Name $ZoneName -Verbose
 }
-else {
-    throw "Removing DNS Zone $ZoneName Failed"
+catch {
+    throw "Removing DNS Zone $ZoneName on $DNSServer Failed"
+}
+try {
+    Remove-DNSServerZone -ComputerName $DNSServer1 -Name $ZoneName -Verbose
+}
+catch {
+    throw "Removing DNS Zone $ZoneName on $DNSServer1 Failed"
+}
+try {
+    Remove-DNSServerZone -ComputerName $DNSServer2 -Name $ZoneName -Verbose
+}
+catch {
+        throw "Removing DNS Zone $ZoneName on $DNSServer2 Failed"
 }
 
-# Create Conditional Forwarders Domain A
-
+#  Create Conditional Forwarders Domain A
 try{
     Add-DNSServerConditionalForwarderZone -ComputerName $DNSServer -Name $ZoneName -ReplicationScope $ReplicationScope -MasterServers $MasterServers
 }
@@ -83,7 +87,6 @@ catch {
 }
 
 # Create Domain Trust - Domain A -> Domain B
-
 try {
     $RemoteForest = [System.DirectoryServices.ActiveDirectory.Forest]::getForest($RemoteContext)
     Write-Host "GetRemoteForest: Succeeded for domain $($RemoteForest)"
@@ -91,11 +94,9 @@ try {
 catch {
     Write-Error "GetRemoteForest: Failed:`n`tError: $($($_.Exception).Message)"
 }
-
 Write-Host "Connected to Remote forest: $($RemoteForest.Name)"
 $Localforest=[System.DirectoryServices.ActiveDirectory.Forest]::getCurrentForest()
 Write-Host "Connected to Local forest: $($Localforest.Name)"
-
 try {
     $LocalForest.CreateTrustRelationship($RemoteForest,"Bidirectional")
     Write-Host "CreateTrustRelationship: Succeeded for domain $($RemoteForest)"
@@ -105,17 +106,14 @@ catch {
 }
 
 # Create Domain Trust - Domain B -> Domain A
-
 Invoke-Command -ComputerName $DNSServerB -Credential ($UserCredentialA) -ScriptBlock {
 try {
     $RemoteForestB = [System.DirectoryServices.ActiveDirectory.Forest]::getForest($RemoteContextB)
     Write-Host "GetRemoteForest: Succeeded for domain $($RemoteForest)"
 }
-
 catch {
     Write-Error "GetRemoteForest: Failed:`n`tError: $($($_.Exception).Message)"
 }
-
 Write-Host "Connected to Remote forest: $($RemoteForestB.Name)"
 $Localforest=[System.DirectoryServices.ActiveDirectory.Forest]::getCurrentForest()
 Write-Host "Connected to Local forest: $($Localforest.Name)"
@@ -128,4 +126,22 @@ catch {
 }
 }
 
-# Verify Trust is built
+# Verify trust is built
+$ADTrustCheck = @(Get-ADTrust -Filter *)
+if (($ADTrustCheck).Target -contains "$ZoneName") {
+    write-host "Trust for $ZoneName exists with $ZoneNameB"
+}
+else {
+    throw "Trust for $ZoneName does not exist on $ZoneNameB"
+}
+
+# Verify Trust is BiDirectional
+$ADTrustCheck = @(Get-ADTrust -Filter *)
+if (($ADTrustCheck).Direction -contains "BiDirectonal") {
+    write-host "Two-Way trust for $ZoneName exists with $ZoneNameB"
+}
+else {
+    throw "Two-Way trust for $ZoneName does not exist on $ZoneNameB"
+}
+
+Write-Host "Script complete. Trust built!"
