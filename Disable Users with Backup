@@ -5,7 +5,7 @@ Ross Edwardson | 2.25.2021
 
 # Variables
 
-$FolderPath = "C:\ADExports\"
+$FolderPath = "*"
 $DC = "*"
 $SearchBase = "*"
 $RemoteAdminB = "*"
