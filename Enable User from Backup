@@ -29,3 +29,4 @@ Import-CSV -Path $Report | ForEach-Object {
 #Complete
 
 write-host "Users Enabed from backup"
+Stop-Transcript
