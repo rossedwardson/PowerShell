@@ -1,0 +1,24 @@
+<# 
+Enable Users en Mass Ver 1.2
+Ross Edwardson | 2.25.2021
+#>
+
+# Variables
+
+$Report = "*"
+$DC = "*"
+$RemoteAdminB = "*"
+$RemoteAdminPasswordB = Get-Content '*\Savedcred.txt' | ConvertTo-SecureString
+$UserCredential = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdminB,$RemoteAdminPasswordB
+
+# Script Start
+
+# Import Users that were disabled
+Import-CSV -Path $Report | ForEach-Object { 
+    $User = $_.sAMAccountName
+    enable-ADAccount $User -Server $DC -Credential $UserCredential
+}
+
+#Complete
+
+write-host "Users Enabed from backup"
