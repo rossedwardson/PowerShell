@@ -17,7 +17,7 @@ $DNSServer2 = "*"
 # $DNSServerB = "*"
 $ZoneName = "*"
 $ZoneNameB = "*"
-$FolderPath = "C:\Backup\"
+$FolderPath = "*"
 $RemoteAdmin = "#"
 $RemoteAdminPassword = Get-Content '*.txt' | ConvertTo-SecureString
 $RemoteContext = New-Object -TypeName "System.DirectoryServices.ActiveDirectory.DirectoryContext" -ArgumentList @( "Forest", $ZoneName, $RemoteAdmin, $RemoteAdminPassword)
@@ -65,17 +65,30 @@ Remove-DNSServerZone -ComputerName $DNSServer -Name $ZoneName -Verbose
 catch {
     throw "Removing DNS Zone $ZoneName on $DNSServer Failed"
 }
+finally {
+    write-host "DNS Zone: $ZoneName deleted from $DNSServer"
+}
+
+# Remove Zone from DNS Server 1
 try {
     Remove-DNSServerZone -ComputerName $DNSServer1 -Name $ZoneName -Verbose
 }
 catch {
     throw "Removing DNS Zone $ZoneName on $DNSServer1 Failed"
 }
+finally {
+    write-host "DNS Zone: $ZoneName deleted from $DNSServer1"
+}
+
+# Remove Zone from DNS Server 2
 try {
     Remove-DNSServerZone -ComputerName $DNSServer2 -Name $ZoneName -Verbose
 }
 catch {
         throw "Removing DNS Zone $ZoneName on $DNSServer2 Failed"
+}
+finally {
+    write-host "DNS Zone: $ZoneName deleted from $DNSServer2"
 }
 
 #  Create Conditional Forwarders Domain A
