@@ -68,3 +68,6 @@ catch {
     write-host "Error disabling: $User"
 }
 }
+
+# Complete
+Stop-Transcript
