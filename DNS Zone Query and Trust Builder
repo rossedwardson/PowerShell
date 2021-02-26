@@ -174,5 +174,6 @@ else {
     throw "Two-Way trust for $ZoneName does not exist on $ZoneNameB"
 }
 
+# Complete
 Write-Host "Script complete. Trust built!"
 Stop-Transcript
