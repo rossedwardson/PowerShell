@@ -10,8 +10,15 @@ $DC = "*"
 $RemoteAdminB = "*"
 $RemoteAdminPasswordB = Get-Content '*\Savedcred.txt' | ConvertTo-SecureString
 $UserCredential = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdminB,$RemoteAdminPasswordB
+$LogPath = "*"
 
 # Script Start
+
+# Create Logfile
+
+Start-Transcript -Path $LogPath
+
+write-host "Starting transaction log and placing in location $LogPath"
 
 # Import Users that were disabled
 Import-CSV -Path $Report | ForEach-Object { 
