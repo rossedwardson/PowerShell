@@ -22,14 +22,21 @@ $RemoteAdmin = "#"
 $RemoteAdminPassword = Get-Content '*.txt' | ConvertTo-SecureString
 $RemoteContext = New-Object -TypeName "System.DirectoryServices.ActiveDirectory.DirectoryContext" -ArgumentList @( "Forest", $ZoneName, $RemoteAdmin, $RemoteAdminPassword)
 $MasterServers = "*", "*"
+# $MasterServersB = "*", "*"
 $ReplicationScope = "Forest"
 $UserCredentialA = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdmin,$RemoteAdminPassword
 $RemoteAdminB = "*"
 $RemoteAdminPasswordB = Get-Content '*.txt' | ConvertTo-SecureString
 $RemoteContextB = New-Object -TypeName "System.DirectoryServices.ActiveDirectory.DirectoryContext" -ArgumentList @( "Forest", $ZoneNameB, $RemoteAdminB, $RemoteAdminPasswordB)
+$LogPath = "*"
  
 
 # Script Start
+
+#Create Logfile
+Start-Transcript -Path $LogPath
+
+write-host "Starting transaction log and placing in location $LogPath"
 
 # Create and Check for Backup Folder
 if (-not (Test-Path C:\Backup)) {
@@ -37,7 +44,7 @@ if (-not (Test-Path C:\Backup)) {
     New-Item -Path $FolderPath -ItemType "Directory"
 }
 else {
-    Write-Error "Folder Exists"
+    Write-host "Folder Exists"
     Write-Host "Moving On"
 }
 
@@ -96,8 +103,18 @@ try{
     Add-DNSServerConditionalForwarderZone -ComputerName $DNSServer -Name $ZoneName -ReplicationScope $ReplicationScope -MasterServers $MasterServers
 }
 catch {
-    Write-Error "Create Forwarder failed for: $ZoneName"
+    Write-Error "Create Forwarder failed for: $ZoneName -> $ZoneNameB"
 }
+
+#  Create Conditional Forwarders Domain B. This is completed already for B -> A.
+<#
+try{
+    Add-DNSServerConditionalForwarderZone -ComputerName $DNSServer -Name $ZoneNameB -ReplicationScope $ReplicationScope -MasterServers $MasterServersB
+}
+catch {
+    Write-Error "Create Forwarder failed for: $ZoneNameB -> $ZoneName"
+}
+#>
 
 # Create Domain Trust - Domain A -> Domain B
 try {
@@ -158,3 +175,4 @@ else {
 }
 
 Write-Host "Script complete. Trust built!"
+Stop-Transcript
