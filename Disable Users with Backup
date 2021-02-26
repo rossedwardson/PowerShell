@@ -11,8 +11,15 @@ $SearchBase = "*"
 $RemoteAdminB = "*"
 $RemoteAdminPasswordB = Get-Content '*\Savedcred.txt' | ConvertTo-SecureString
 $UserCredential = New-Object System.Management.Automation.PSCredential -ArgumentList $RemoteAdminB,$RemoteAdminPasswordB
+$LogFile = "*"
 
 # Script Start
+
+# Start Log File
+
+Start-Transcript -Path $LogPath
+
+write-host "Starting transaction log and placing in location $LogPath"
 
 #Check and create folder
 
