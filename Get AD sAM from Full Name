@@ -11,6 +11,7 @@ $OutFile = "C:\AD\export1.csv"
 
 #Start Script
 
+#Get Account Name
 foreach ($User in $UserList){
     $domainname = $user.user
 Get-ADUser -Filter{displayName -like $domainname} | select samAccountName | Export-Csv -Path '$OutFile' -NoType -Append }
