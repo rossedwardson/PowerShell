@@ -1,2 +1,2 @@
 # PowerShell
-Repository of Powershell scripts and oneliners
+Repository of Powershell scripts and one-liners
