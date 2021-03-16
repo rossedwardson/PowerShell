@@ -1,6 +1,7 @@
 <#
-Query Number of CPUS. Cores, and Memory per VM
-Ross Edwardson - 03/16/2021
+Query number of CPUs and Cores per Host
+Query number of CPUS, Cores, and Memory per VM
+Ross Edwardson @ CMI/CORA - 03/16/2021
 #>
 
 #Variables
@@ -19,22 +20,22 @@ Start-Transcript -Path $LogPath
 
 # Create Output File Name - Hosts
 $FileSuffix = (get-date).toString('yyyyMMddHHmm')
-$BackupPath = $FolderPath + "Backup" + "_" + $FileSuffix + ".csv"
-$BackupFile = "Backup" + "_" + $FileSuffix + ".csv"
+$BackupPath = $FolderPath + "Stats" + "_" + "$vCenter" + "_" + $FileSuffix + ".csv"
+$BackupFile = "Stats" + "_" + "$vCenter" + "_" + $FileSuffix + ".csv"
 New-Item -ItemType "File" -Path $FolderPath -Name "$BackupFile" -force
 write-host "Output file written to : $BackupPath"
 
 # Create Output File Name - VMs
 $FileSuffix1 = (get-date).toString('yyyyMMddHHmm')
-$BackupPathVMs = $FolderPath + "Backup" + "_" + "VMs" + $FileSuffix1 + ".csv"
-$BackupFile1 = "Backup" + "_" + "VMs" + $FileSuffix1 + ".csv"
+$BackupPathVMs = $FolderPath + "Stats" + "_" + "VMs" + "_" + "$vCenter" + "_" + $FileSuffix1 + ".csv"
+$BackupFile1 = "Stats" + "_" + "VMs" + "_" + "$vCenter" + "_" + $FileSuffix1 + ".csv"
 New-Item -ItemType "File" -Path $FolderPath -Name "$BackupFile1" -force
 write-host "Output file written to : $BackupPathVM"
 
 # Connect to VIServer
 Connect-VIServer $vCenter -Credential ($RemoteCredential)
 
-#Get Hosts
+# Get Hosts
 $ESXHosts = Get-View -ViewType HostSystem
 foreach ($ESXHost in $ESXHosts) {
     $obj = new-object psobject 
