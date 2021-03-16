@@ -1,7 +1,7 @@
 <#
 Find sAMAccountName based off users first and last name.
 Single Column. "User" as header in Excel with "First Last" convention.
-Ross Edwardson @ CMI/CORA | 3.5.2021
+Ross Edwardson @ CMI/CORA | 03/05/2021
 #>
 
 #Variables
