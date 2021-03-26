@@ -1,4 +1,5 @@
 <#
+Purpose: Get disabled users in AD and convert those users to shared mailboxes.
 1. Get disabled users in Disabled Users OU.
 2. Load EMS 2010 into session.
 3. Convert disabled users to shared mailboxes.
