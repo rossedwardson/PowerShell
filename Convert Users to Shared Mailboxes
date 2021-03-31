@@ -18,14 +18,6 @@ $LogPath = "*\Log.log"
 Start-Transcript -Path $LogPath
 write-host "Starting transaction log and placing in location $LogPath"
 
-# Create Backup File
-$FileSuffix = $DC + "-" + "AD"
-$BackupPath = $FolderPath + "Backup" + "_" + $FileSuffix + ".csv"
-$BackupFile = "Backup" + "_" + $FileSuffix + ".csv"
-New-Item -ItemType "File" -Path $FolderPath -Name "$BackupFile"
-write-host "Output file written to : $BackupPath"
-
-
 # Get Disabled Users
 Import-Module ActiveDirectory
 try {
@@ -44,7 +36,7 @@ finally{
 Add-PSsnapin Microsoft.Exchange.Management.PowerShell.E2010
 
 # Convert Disabled Users to Shared mailboxes.
-foreach($User in $DisabledUsers)
+foreach($User in ($DisabledUsers).UserPrincipalName)
 {
 try{
     set-mailbox -Identity $User -type Shared
@@ -53,4 +45,5 @@ catch {
     write-host "Error setting $User to Shared"
 }
 }
+Write-Host "Script Complete"
 Stop-Transcript
