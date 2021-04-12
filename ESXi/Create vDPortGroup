@@ -8,9 +8,8 @@ Ross Edwardson @ CORA/CMI | 04.07.2021
 # Variables
 $vCenter = "*"
 $LogPath = "*"
-$vLANPrefix = "*"
-$vlanid = @()
-$vlanid= "*"
+$VLANPREFIX = "*"
+$vlanid= @(*)
 $vDSwitch = "*"
 $ActiveUplink = "*"
 $StandbyUplink = "*"
@@ -29,8 +28,8 @@ connect-viserver "$vCenter" -Credential (Get-Credential)
 
 # Get and Set vDPortGroups
 $vlanid | foreach {
-Get-VDSwitch -Name "$vDSwitch" | New-VDPortgroup -Name $vLANPrefix$_ -VlanId $_ -RunAsync:$true
-Get-VDSwitch -Name "$vDSwitch" | Get-VDPortgroup -Name $vLANPrefix$_ | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort "$ActiveUplink" -StandbyUplinkPort "$StandbyUplink"
+Get-VDSwitch -Name "$vDSwitch" | New-VDPortgroup -Name $VLANPREFIX$_ -VlanId $_ -RunAsync:$true
+Get-VDSwitch -Name "$vDSwitch" | Get-VDPortgroup -Name $VLANPREFIX$_ | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort "$ActiveUplink" -StandbyUplinkPort "$StandbyUplink"
 }
 
 # Complete
