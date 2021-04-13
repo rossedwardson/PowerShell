@@ -1,0 +1,42 @@
+<#
+Increase CPU cores on running VM
+1. Shutdown VM
+2. Increase Core Count
+3. Startup VM
+Ross Edwardson | 04.13.2021
+#>
+
+# Variables
+$LogLocation = "C:\Scripts\Log.log"
+$vCenter = "vcsa.rehomelab.com"
+$VMs = "Untangle" 
+$CPUCoreCount = "2"
+$CorePerSocket = "1"
+# $MemoryGBCount = "6"
+
+# Start Script
+
+# Start Timer
+$StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
+$stopwatch.Start()
+
+# Start Transcript
+Start-Transcript -path $LogLocation
+
+# Connect VIServer
+Connect-viserver $vCenter -Credential (Get-Credential)
+
+# Shtudown, wait for complete VM power off, increase CPU, turn VM on.
+foreach ($VM in $VMs) {
+    $VM | Shutdown-VMGuest -Confirm:$false
+    Sleep 240
+    $VM | Set-VM -NumCPU $CPUCoreCount -CoresPerSocket $CorePerSocket -Confirm:$False
+    $VM | Start-VM
+}
+
+# Complete
+Write-Host "Script complete"
+$StopWatch.Stop()
+$CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
+$CreationTime
+Stop-Transcript
