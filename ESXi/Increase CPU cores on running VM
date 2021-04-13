@@ -7,9 +7,9 @@ Ross Edwardson | 04.13.2021
 #>
 
 # Variables
-$LogLocation = "C:\Scripts\Log.log"
-$vCenter = "vcsa.rehomelab.com"
-$VMs = "Untangle" 
+$LogLocation = "*\Log.log"
+$vCenter = "*"
+$VMs = "*" 
 $CPUCoreCount = "2"
 $CorePerSocket = "1"
 # $MemoryGBCount = "6"
