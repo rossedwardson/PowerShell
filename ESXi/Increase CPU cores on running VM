@@ -1,5 +1,5 @@
 <#
-Increase CPU cores on running VM
+Increase CPU cores on running VM | Rev 1.1
 1. Shutdown VM
 2. Increase Core Count
 3. Startup VM
@@ -10,31 +10,32 @@ Ross Edwardson | 04.13.2021
 $LogLocation = "*\Log.log"
 $vCenter = "*"
 $VMs = "*" 
-$CPUCoreCount = "2"
-$CorePerSocket = "1"
-# $MemoryGBCount = "6"
+$CPUCoreCount = "*"
+$CorePerSocket = "*"
+# $MemoryGBCount = "*"
 
 # Start Script
+
+# Start Transcript
+Start-Transcript -path $LogLocation
 
 # Start Timer
 $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $stopwatch.Start()
 
-# Start Transcript
-Start-Transcript -path $LogLocation
-
 # Connect VIServer
-Connect-viserver $vCenter -Credential (Get-Credential)
+Connect-VIServer $vCenter -Credential (Get-Credential)
 
 # Shtudown, wait for complete VM power off, increase CPU, turn VM on.
 foreach ($VM in $VMs) {
-    $VM | Shutdown-VMGuest -Confirm:$false
-    Sleep 240
-    $VM | Set-VM -NumCPU $CPUCoreCount -CoresPerSocket $CorePerSocket -Confirm:$False
-    $VM | Start-VM
+    Shutdown-VMGuest $VM -Confirm:$false
+    Sleep 120
+    Set-VM $VM -NumCPU $CPUCoreCount -CoresPerSocket $CorePerSocket -Confirm:$False
+    Start-VM $VM
 }
 
 # Complete
+disconnect-viserver $vCenter -confirm:$false
 Write-Host "Script complete"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
