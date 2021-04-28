@@ -6,9 +6,9 @@ Ross Edwardson @ CORA/CMI | 04.28.2021
 #>
 
 # Variables
-$LogPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\Logs\Disabled With Groups\Log.log"
-$credentials = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Temp\SavedCreds_cora_redwardson_DJ-T570.xml"
-$ExportPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\CSVs\Disabled With Groups\DisbaledwithGroups.csv"
+$LogPath = "\Log.log"
+$credentials = ""
+$ExportPath = "DisbaledwithGroups.csv"
 
 # Start script
 Import-Module ActiveDirectory
