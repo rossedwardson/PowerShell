@@ -19,11 +19,11 @@ Start-Transcript $LogPath
 # Get Disabled AD users
 Get-ADUser -Credential $credentials -Filter * -Properties DisplayName,memberof,DistinguishedName,Enabled | ForEach-Object  {
     New-Object PSObject -Property @{
-      UserName = $_.DisplayName
-      DistinguishedName = $_.DistinguishedName
-      Enabled = $_.Enabled
-	Groups = ($_.memberof | Get-ADGroup | Select-Object -ExpandProperty Name) -join ";"
-}
+        UserName = $_.DisplayName
+        DistinguishedName = $_.DistinguishedName
+        Enabled = $_.Enabled
+	    Groups = ($_.memberof | Get-ADGroup | Select-Object -ExpandProperty Name) -join ";"
+    }
 } | Select-Object UserName,@{l='OU';e={$_.DistinguishedName.split(',')[1].split('=')[1]}},Groups,Enabled | Export-Csv  $ExportPath –NTI
 
 # Complete
