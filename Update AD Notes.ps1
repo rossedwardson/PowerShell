@@ -15,7 +15,7 @@ Import-Module ActiveDirectory
 # Start Transcript
 Start-Transcript $LogPath
 
-# Import CSV and store usernames and the notes to variables
+# Import CSV
 $CSV = Import-CSV -path $CSVPath -Delimiter ","
 
 # Update Notes Object
