@@ -22,11 +22,11 @@ Start-Transcript $LogPath
 $CSV = Import-CSV -path $CSVPath -Delimiter ","
 
 # Get old notes and export to CSV for backup
-$Test = @()
+$Users = @()
 foreach ($User in $CSV) { 
-    $Test += get-aduser -Identity $($User.LoginID) -Properties Name, Info | Select-Object -Property Name, Info
+    $Users += get-aduser -Identity $($User.LoginID) -Properties Name, Info | Select-Object -Property Name, Info
 }
-$Test | Export-CSV $ExportPath -NoTypeInformation
+$Users | Export-CSV $ExportPath -NoTypeInformation
 
 # Update Notes Object
 foreach ($row in $CSV) {
