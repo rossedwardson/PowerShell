@@ -1,6 +1,6 @@
 <#
 User Folder Creation Rev 1.5
-1. Get User
+1. Get User from Read Host.
 2. Check User Folder
 3. Create User Folder
 4. Assign Full Permissions to Users Folder to only User
@@ -42,9 +42,10 @@ else {
 
 # Request Users Name
 [string[]] $UserNames = @() -split ","
-write-host "Leave field blank and strike enter when finished."
+write-host "Please enter the User's Full Name in format: Full First Name Full Last Name" -BackgroundColor 'DarkGreen' -ForegroundColor 'Black'
+write-host "Please enter 1 user's full name per line. Leave field blank and strike enter when finished." -BackgroundColor 'DarkMagenta' -ForegroundColor 'Black'
 do {
- $uinput = (Read-Host "Please enter the Full Name")
+ $uinput = (Read-Host "Please enter the User's Full Name:")
  
  if ($uinput -ne '') {$UserNames += $uinput}
 }
