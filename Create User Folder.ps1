@@ -1,5 +1,5 @@
 <#
-User Folder Creation Rev 1.5
+User Folder Creation Rev 1.7
 1. Get User from Read Host.
 2. Check User Folder
 3. Create User Folder
@@ -31,8 +31,8 @@ $stopwatch.Start()
 Start-Transcript -path $LogLocation
 
 # Verify no PSDrives exist for upcoming operations.
-$PSDrive = @(Get-PSDrive)
-if (($PSDrive).Name -contains "$PSDriveName") {
+$PSDrive = @(Get-SMBMapping)
+if (($PSDrive).RemotePath -like "$FolderPath\*") {
     write-host "PSDrive $PSDriveName does exist. Moving on."  
 }
 else {
