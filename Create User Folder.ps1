@@ -1,5 +1,5 @@
 <#
-User Folder Creation Rev 1.7
+User Folder Creation Rev 1.8
 1. Get User from Read Host.
 2. Check User Folder
 3. Create User Folder
@@ -89,5 +89,5 @@ Write-Host "Script complete"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
 $CreationTime
-Remove-PSDrive -Name $PSDriveName
+Remove-PSDrive -Name $PSDriveName -ErrorAction SilentlyContinue
 Stop-Transcript
