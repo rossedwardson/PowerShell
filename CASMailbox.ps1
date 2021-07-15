@@ -7,13 +7,13 @@ Ross Edwardson @ CORA/CMI | 07.15.2021
 #>
 
 # Variables
-$DC = "coradc1.cmillc.org"
-$BackupPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\Backups\CASMailbox\CASMailboxes.csv"
-$CSVPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\CSVs\CASMailbox\CASMailboxes.csv"
-$LogPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\Logs\CASMailbox\Log.log"
-$CredPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Temp\SavedCreds_cora_redwardson_DJ-T570.xml"
+$DC = "*"
+$BackupPath = "*\CASMailboxes.csv"
+$CSVPath = "*\CASMailboxes.csv"
+$LogPath = "*\Log.log"
+$CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
-$SearchPath = "OU=Accounts,DC=cmillc,DC=org"
+$SearchPath = "*"
 
 # Script Start
 # Start Timer
@@ -39,7 +39,7 @@ finally{
 }
 
 # Load EMS
-$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://exchange.cmillc.org/PowerShell/ -Authentication Kerberos -Credential $Credentials
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<Exchange>/PowerShell/ -Authentication Kerberos -Credential $Credentials
 Import-PSSession $Session -DisableNameChecking
 
 # Get ActiveSync Settings
