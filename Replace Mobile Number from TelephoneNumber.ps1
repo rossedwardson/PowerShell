@@ -13,7 +13,7 @@ $SearchPath = "*"
 $LogPath = "*\Log.log"
 $BackupPath = "*\PhoneNumbers_Before.csv"
 $BackupPath1 = "*\PhoneNumbers_After.csv"
-$CredPath = "C*.xml"
+$CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
 
 
@@ -26,9 +26,9 @@ $stopwatch.Start()
 Start-Transcript -Path $LogPath
 write-host "Starting transaction log and placing in location $LogPath"
 
-# Get AD Users and Phone Numbers || Acceptable Properties TelephoneNumber, Mobile, Fax, HomePhone, Pager, IPPhone
+# Get AD Users and Phone Numbers || Acceptable Properties for Contact Numbers TelephoneNumber, Mobile, Fax, HomePhone, Pager, IPPhone
 try {
-    $Users = @(Get-ADUser -Server $DC -Credential $Credentials -SearchBase "$SearchPath" -Properties * -filter {Enabled -eq $true})
+    $Users = @(Get-ADUser -Server $DC -Credential $Credentials -SearchBase "$SearchPath" -Properties SamAccountName, DistinguishedName, TelephoneNumber, Mobile -filter {Enabled -eq $true})
     $Users | Select-Object -Property SamAccountName, DistinguishedName, TelephoneNumber, Mobile | Export-CSV -Path $BackupPath -NoTypeInformation -Force
 }
 catch {
@@ -49,8 +49,8 @@ foreach ($Puser1 in $Puser) {
 
 # Verify Mobile Number Change
 try {
-    $UsersAfter = @(Get-ADUser -Server $DC -Credential $Credentials -SearchBase "$SearchPath" -Properties * -filter {Enabled -eq $true})
-    $UsersAfter | Select-Object -Property SamAccountName, DistinguishedName, TelephoneNumber, Mobile | Export-CSV -Path $BackupPath1 -NoTypeInformation -Force
+    $UsersAfter = @(Get-ADUser -Server $DC -Credential $Credentials -SearchBase "$SearchPath" -Properties SamAccountName, TelephoneNumber, Mobile -filter {Enabled -eq $true})
+    $UsersAfter | Select-Object -Property SamAccountName, TelephoneNumber, Mobile | Export-CSV -Path $BackupPath1 -NoTypeInformation -Force
 }
 catch {
     write-host "Error Happened in Verification"
