@@ -8,13 +8,13 @@ Ross Edwardson @ CORA/CMI | 07.21.2021
 
 # Variables
 $DC = "*"
+$SearchPath = "*"
 $BackupPath = "*\MailboxDBs.csv"
 $CSVPath = "*\MailboxDBs.csv"
 $LogPath = "*\MailboxDatabase\Log.log"
 $CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
-$SearchPath = "*"
-$ExchangeURL = '*'
+$ExchangeURL = '*' # Leave the literal quotes.
 
 # Script Start
 # Start Timer
@@ -43,7 +43,7 @@ finally{
 $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$ExchangeURL/PowerShell/ -Authentication Kerberos -Credential $Credentials
 Import-PSSession $Session -DisableNameChecking
 
-# Get ActiveSync Settings
+# Get User's Database location
 foreach ($User in ($EnabledUsers).UserPrincipalName)
 {
 try{
@@ -59,5 +59,6 @@ Write-Host "Script complete"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
 $CreationTime
+Write-host "I took $CreationTime to compelete"
 Remove-PSSession $Session
 Stop-Transcript 

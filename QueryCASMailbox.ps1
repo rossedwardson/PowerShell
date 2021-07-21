@@ -59,5 +59,6 @@ Write-Host "Script complete"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
 $CreationTime
+Write-host "I took $CreationTime to compelete"
 Remove-PSSession $Session
 Stop-Transcript
