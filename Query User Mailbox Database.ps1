@@ -14,7 +14,7 @@ $CSVPath = "*\MailboxDBs.csv"
 $LogPath = "*\MailboxDatabase\Log.log"
 $CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
-$ExchangeURL = '*' # Leave the literal quotes.
+$ExchangeURL = '*'      # Leave the literal quotes.
 
 # Script Start
 # Start Timer
