@@ -7,13 +7,14 @@ Ross Edwardson @ CORA/CMI | 07.15.2021
 #>
 
 # Variables
-$DC = "coradc1.cmillc.org"
+$DC = "*"
+$SearchPath = "*"       # OU Path to limit Search.
 $BackupPath = "*\CASMailboxes.csv"
 $CSVPath = "*\CASMailboxes.csv"
 $LogPath = "*\Log.log"
 $CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
-$SearchPath = "*"
+$ExchangeFQDN = '*'     # Leave the literal quotes.
 
 # Script Start
 # Start Timer
@@ -39,7 +40,7 @@ finally{
 }
 
 # Load EMS
-$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<exchange>/PowerShell/ -Authentication Kerberos -Credential $Credentials
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$ExchangeFQDN/PowerShell/ -Authentication Kerberos -Credential $Credentials
 Import-PSSession $Session -DisableNameChecking
 
 # Get ActiveSync Settings
