@@ -32,7 +32,7 @@ $Tags = foreach ($VM in $VMs) {
 $Tags | Select-Object Entity, Tag | Export-CSV -Path $ExportPath -NoTypeInformation
 
 # Get VMs without Tags
-$VMsNoTags = Get-VM | ?{(Get-TagAssignment $_) -eq $null}
+$VMsNoTags = Get-VM | Where-Object {(Get-TagAssignment $_) -eq $null}
 $VMsNoTags | Select-Object Name | Export-CSV -Path $ExportPath2 -NoTypeInformation
 
 # Complete
