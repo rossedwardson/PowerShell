@@ -13,7 +13,7 @@ $NetProfile = "Any"
 $Action = "Allow"
 
 # Script Start
-
+ 
 # Get Local logged in user
 $User = ((Get-CimInstance -Class Win32_ComputerSystem).Username).Split('\')[1]
 
