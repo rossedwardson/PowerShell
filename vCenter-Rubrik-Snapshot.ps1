@@ -236,10 +236,6 @@ do {
 until ($PowerStatePost.State -eq 'POWERED_OFF')
 Write-Host "Moving on to snapshot section"
 
-####################
-## Rubrik Section ##
-####################
-
 # Get VM info from Rubrik
     # Append URI for Get VM
     $RubrikURIGet = "https://" + $RubrikCluster + "/api/v1/vmware/vm?" + "name=$WantedVMName"
