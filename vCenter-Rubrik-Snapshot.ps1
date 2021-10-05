@@ -3,10 +3,11 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 1. Token vCenter
 2. Token Rubrik
 3. Get VM's Number in vCenter
-4. Power Off VM vCenter API
+4. Power Off VM
 5. Get VM in Rubrik
 6. Take Snapshot
-7. Power on VM
+7. Wait until job complete
+8. Power on VM
 Ross Edwardson @ CMI/CORA | 09.23.2021
 Rev 1.3
 #>
