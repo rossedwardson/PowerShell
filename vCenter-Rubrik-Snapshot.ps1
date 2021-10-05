@@ -8,7 +8,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 6. Take Snapshot
 7. Power on VM
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.1
+Rev 1.2
 #>
 
 # Variables
@@ -45,17 +45,6 @@ Start-Transcript -Path $Log -NoClobber
 
 # Import Modules
 Import-Module Rubrik
-
-# Import Functions
-$Functions = Get-ChildItem -Path $FunctionsDirectory -Recurse
-
-# Adding each Rubrik function 
-ForEach ($Function in $Functions) {
-    $FullFunctionPath = $Function.FullName
-     
-    # Importing functions
-    . $FullFunctionPath
-}
 
 # Adding certificate exception and TLS 1.2 to prevent API errors
 Add-Type @"
