@@ -1,9 +1,10 @@
 <#
 Disk Space Cleanup
 1. Clean Windows temp locations
-2. Clean Teams Cache locations
+2. Clean user temp locations
+3. Clean Teams Cache locations
 Ross Edwardson @ CMI/CORA | 10.05.2021
-Rev 0.1 | Building
+Rev 1.1
 #>
 
 # Self-Elevating to run as admin
@@ -47,13 +48,13 @@ $Log = $LogDirectory + "\PowerOff" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.To
 Start-Transcript -Path $Log -NoClobber
 
 # Clear Windows Temp Folders
-Get-ChildItem $WindowsTempLocation -Directory | Where-Object name -in ($WindowsTempFolders) | ForEach-Object {Remove-Item $_.FullName -Recurse -Force -Whatif}
+Get-ChildItem $WindowsTempLocation -Directory | Where-Object name -in ($WindowsTempFolders) | ForEach-Object {Remove-Item $_.FullName -Recurse -Force}
 
 # Clear User Temp Folders
-Get-ChildItem $UserTempLocations -Directory | ForEach-Object {Remove-Item $_.FullName -Recurse -Force -WhatIf}
+Get-ChildItem $UserTempLocations -Directory | ForEach-Object {Remove-Item $_.FullName -Recurse -Force}
 
 # Clear Teams Folders
-Get-ChildItem $TeamsLocation -directory | Where-Object name -in ($TeamsCacheFolders) | ForEach-Object {Remove-Item $_.FullName -Recurse -Force -WhatIf}
+Get-ChildItem $TeamsLocation -directory | Where-Object name -in ($TeamsCacheFolders) | ForEach-Object {Remove-Item $_.FullName -Recurse -Force}
 
 # Complete
 Write-Host "Script complete"
