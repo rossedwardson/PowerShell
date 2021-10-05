@@ -1,10 +1,10 @@
 <#
 Disk Space Cleanup
 1. Clean Windows temp locations
-2. Clean user temp locations
+2. Clean User temp locations
 3. Clean Teams Cache locations
 Ross Edwardson @ CMI/CORA | 10.05.2021
-Rev 1.1
+Rev 1.2
 #>
 
 # Self-Elevating to run as admin
@@ -17,13 +17,13 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 & $ScriptLocation
 
 # Variables
-$LogDirectory = "*\Logs"
+$LogDirectory = "C:\Scripts\Logs"
 $TeamsLocation = "C:\Users\*\AppData\Roaming\Microsoft\Teams\*"
 $TeamsCacheFolders = 'application cache', 'blob storage', 'databases', 'GPUcache', 'IndexedDB', 'Local Storage', 'tmp'
 $WindowsTempLocation = "C:\Windows\*"
 $WindowsTempFolders = ('Temp', 'Prefetch')
 $UserTempLocations  = "C:\Users\*\AppData\Local\Temp\*"
-$ScriptLocation = '*\DiskClean.ps1'
+$ScriptLocation = 'C:\Scripts\DiskClean.ps1'
 
 # Script Start
 # Start Timer
@@ -42,10 +42,11 @@ IF ($LogFilePathTest -eq $False) {
 $Now = Get-Date
 
 # Creating log file name
-$Log = $LogDirectory + "\PowerOff" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".log"
+$Log = $LogDirectory + "\DiskCleanup-" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".log"
 
 # Starting logging
 Start-Transcript -Path $Log -NoClobber
+Write-Host "Logging started and placed @ $Log"
 
 # Clear Windows Temp Folders
 Get-ChildItem $WindowsTempLocation -Directory | Where-Object name -in ($WindowsTempFolders) | ForEach-Object {Remove-Item $_.FullName -Recurse -Force}
