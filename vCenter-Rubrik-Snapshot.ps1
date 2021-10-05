@@ -16,9 +16,7 @@ $vCenter = "*"
 $CredentialPath = "*.xml"
 $RubrikCredentialPath = "*.xml"
 $RubrikCluster = "*"
-$ScriptDirectory = "*"
-$LogDirectory = $ScriptDirectory + "Logs"
-$FunctionsDirectory = $ScriptDirectory + "Functions"
+$LogDirectory = "*"
 $WantedVMName = "*" # VM to run actions against
 
 # Script Start
