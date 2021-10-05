@@ -6,19 +6,17 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 4. Power Off VM vCenter API
 5. Get VM in Rubrik
 6. Take Snapshot
-7. Power on VM
+7. Power on VM vCenter
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1
+Rev 1.4
 #>
 
 # Variables
 $vCenter = "*"
+$RubrikCluster = "*"
 $CredentialPath = "*.xml"
 $RubrikCredentialPath = "*.xml"
-$RubrikCluster = "*"
-$ScriptDirectory = "*"
-$LogDirectory = $ScriptDirectory + "Logs"
-$FunctionsDirectory = $ScriptDirectory + "Functions"
+$LogDirectory = "*\Logs"
 $WantedVMName = "*" # VM to run actions against
 
 # Script Start
@@ -45,17 +43,6 @@ Start-Transcript -Path $Log -NoClobber
 
 # Import Modules
 Import-Module Rubrik
-
-# Import Functions
-$Functions = Get-ChildItem -Path $FunctionsDirectory -Recurse
-
-# Adding each Rubrik function 
-ForEach ($Function in $Functions) {
-    $FullFunctionPath = $Function.FullName
-     
-    # Importing functions
-    . $FullFunctionPath
-}
 
 # Adding certificate exception and TLS 1.2 to prevent API errors
 Add-Type @"
@@ -120,8 +107,8 @@ $RubrikPassword = $RubrikCredential.GetNetworkCredential().Password
 
 # Building Rubrik API string & invoking REST API
 $v1BaseURL = "https://" + $RubrikCluster + "/api/v1/"
-# $v2BaseURL = "https://" + $RubrikCluster + "/api/v1/"
-# $InternalURL = "https://" + $RubrikCluster + "/api/internal/"
+# $v2BaseURL = "https://" + $RubrikCluster + "/api/v1/" # Not Needed ATM
+# $InternalURL = "https://" + $RubrikCluster + "/api/internal/"# Not Needed ATM
 $RubrikSessionURL = $v1BaseURL + "session"
 $Header = @{"Authorization" = "Basic "+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($RubrikUser+":"+$RubrikPassword))}
 $Type = "application/json"
@@ -166,7 +153,7 @@ Try {
     $R1 = Invoke-WebRequest -Uri "$VCURI" -Method 'Get' -Headers $vCSession
     $vCenterVMs = (ConvertFrom-Json $R1.Content).value
 
-        # Filter for Rubrik-Autotest
+        # Filter for wanted VM
         $RubrikVM = ($vCenterVMs | Where-Object {$_.name -eq "$WantedVMName"}).Vm
         $RubrikVM
 }
@@ -192,7 +179,7 @@ Catch {
 # Save State to Variable
 $PowerStatePre = (ConvertFrom-Json $R2.Content).value
 
-# Add logic for if powerstate = on power off. If powerstate off continue to Snap
+# If powerstate = on power off. If powerstate off continue to Snap
 If ($PowerStatePre.State -eq "POWERED_ON") {
     Write-Host "VM is on. Proceeding to power off."
              
@@ -235,10 +222,6 @@ do {
 }
 until ($PowerStatePost.State -eq 'POWERED_OFF')
 Write-Host "Moving on to snapshot section"
-
-####################
-## Rubrik Section ##
-####################
 
 # Get VM info from Rubrik
     # Append URI for Get VM
@@ -296,7 +279,7 @@ Do {
     $R7ID = (ConvertFrom-Json $R7.Content).Data
     $R7Job = $R7ID.LatestEvent
     $JobFilter = ($R7Job | Where-Object {$_.jobinstanceid -like "$R6ID"})
-    $JobID = $JobFilter.id
+    # $JobID = $JobFilter.id # Unneeded, but keeping for reasons.
     $JobState = $JobFilter.EventStatus
 }
 Until ($JobState.EventStatus -eq 'Success')
@@ -315,7 +298,7 @@ Catch {
 # Save State to Variable
 $PowerStatePostSnap = (ConvertFrom-Json $R8.Content).value
 
-# Add logic for if powerstate = on power off. If powerstate off continue to Snap
+# Power VM on
 If ($PowerStatePostSnap.State -eq "POWERED_OFF") {
     Write-Host "VM is off. Proceeding to power on."
              
