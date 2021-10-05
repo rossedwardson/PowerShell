@@ -8,7 +8,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 6. Take Snapshot
 7. Power on VM
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1
+Rev 1.1
 #>
 
 # Variables
