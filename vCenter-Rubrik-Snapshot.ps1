@@ -8,7 +8,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 6. Take Snapshot
 7. Power on VM
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.2
+Rev 1.3
 #>
 
 # Variables
@@ -97,7 +97,6 @@ Catch {
 ## Rubrik API Login ##
 ######################
 
-# Login to Rubrik via API
 # Import Rubrik Credentials
 $RubrikCredential = Import-CliXml -Path "$RubrikCredentialPath"
 
@@ -107,8 +106,8 @@ $RubrikPassword = $RubrikCredential.GetNetworkCredential().Password
 
 # Building Rubrik API string & invoking REST API
 $v1BaseURL = "https://" + $RubrikCluster + "/api/v1/"
-# $v2BaseURL = "https://" + $RubrikCluster + "/api/v1/"
-# $InternalURL = "https://" + $RubrikCluster + "/api/internal/"
+# $v2BaseURL = "https://" + $RubrikCluster + "/api/v1/" # Keeping for reasons.
+# $InternalURL = "https://" + $RubrikCluster + "/api/internal/" # Keeping for reasons.
 $RubrikSessionURL = $v1BaseURL + "session"
 $Header = @{"Authorization" = "Basic "+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($RubrikUser+":"+$RubrikPassword))}
 $Type = "application/json"
@@ -153,7 +152,7 @@ Try {
     $R1 = Invoke-WebRequest -Uri "$VCURI" -Method 'Get' -Headers $vCSession
     $vCenterVMs = (ConvertFrom-Json $R1.Content).value
 
-        # Filter for Rubrik-Autotest
+        # Filter for VM
         $RubrikVM = ($vCenterVMs | Where-Object {$_.name -eq "$WantedVMName"}).Vm
         $RubrikVM
 }
@@ -208,7 +207,7 @@ do {
     Try {
         $R4 = Invoke-WebRequest -URI "$VMURI" -Method 'Get' -Headers $vCSession
         
-        # Sleep for 10 seconds Per loop
+        # Sleep for 10 seconds.
         Start-Sleep -s "10"
         Write-Host "Sleeping for 10 seconds til VM is off"
     }
@@ -217,7 +216,7 @@ do {
         Write-Host "Error in power state loop request"
         Break
     }
-        # Save R4 to Variable
+        # Save Response to Variable
         $PowerStatePost = (ConvertFrom-Json $R4.Content).value
 }
 until ($PowerStatePost.State -eq 'POWERED_OFF')
@@ -266,6 +265,7 @@ $R6ID = $R6Status.ID
 Do {
     Try {
         $R7 = Invoke-WebRequest $JobIDURI -Method 'Get' -Headers $RubrikSessionHeader
+            
             # Sleep for 10 seconds Per loop
             Start-Sleep -s "10"
             Write-Host "Sleeping for 10 seconds til VM is off"
@@ -279,7 +279,7 @@ Do {
     $R7ID = (ConvertFrom-Json $R7.Content).Data
     $R7Job = $R7ID.LatestEvent
     $JobFilter = ($R7Job | Where-Object {$_.jobinstanceid -like "$R6ID"})
-    $JobID = $JobFilter.id
+    # $JobID = $JobFilter.id # Unneeded, but keeping for reasons.
     $JobState = $JobFilter.EventStatus
 }
 Until ($JobState.EventStatus -eq 'Success')
@@ -298,7 +298,7 @@ Catch {
 # Save State to Variable
 $PowerStatePostSnap = (ConvertFrom-Json $R8.Content).value
 
-# Add logic for if powerstate = on power off. If powerstate off continue to Snap
+# Checks VM power and powers on if off.
 If ($PowerStatePostSnap.State -eq "POWERED_OFF") {
     Write-Host "VM is off. Proceeding to power on."
              
@@ -330,7 +330,7 @@ Catch {
     Break
 }
 $PostState = (ConvertFrom-Json $R10.Content).value
-Write-Host "$WantedVMName is $PostState"
+Write-Host "$WantedVMName is $PostState and completed snapshot."
 
 # Complete
 Write-Host "Script complete"
