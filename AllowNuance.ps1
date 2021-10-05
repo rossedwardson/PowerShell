@@ -13,7 +13,7 @@ $NetProfile = "Any"
 $Action = "Allow"
 
 # Script Start
- 
+
 # Get Local logged in user
 $User = ((Get-CimInstance -Class Win32_ComputerSystem).Username).Split('\')[1]
 
@@ -24,4 +24,4 @@ $Path = "C:\Users\$User\AppData\Local\Apps\2.0\"
 $FullPath = Get-ChildItem -path $Path -Recurse -include "Nuance.PowerScribeOne.exe"
 
 # Add Nuance to Firewall
-New-NetFirewallRule -DisplayName "$DisplayName" -Direction "$Directon" -Program "$FullPath" -Profile "$NetProfile" -Action "$Action"
+New-NetFirewallRule -DisplayName "$DisplayName" -Directon "$Directon" -Program "$FullPath" -Profile "$NetProfile" -Action "$Action"
