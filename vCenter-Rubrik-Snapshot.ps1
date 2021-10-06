@@ -8,7 +8,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 6. Take Snapshot
 7. Power on VM vCenter
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.5
+Rev 1.6
 #>
 
 # Variables
@@ -336,5 +336,5 @@ Write-Host "$WantedVMName is $PostState"
 Write-Host "Script complete"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
-$CreationTime
+Write-Host "I took $CreationTime to complete."
 Stop-Transcript
