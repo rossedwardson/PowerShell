@@ -8,7 +8,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 6. Take Snapshot
 7. Power on VM vCenter
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.4
+Rev 1.5
 #>
 
 # Variables
@@ -282,7 +282,7 @@ Do {
     # $JobID = $JobFilter.id # Unneeded, but keeping for reasons.
     $JobState = $JobFilter.EventStatus
 }
-Until ($JobState.EventStatus -eq 'Success')
+Until ($JobState -eq 'Success')
 Write-Host "Snapshot for $WantedVMName is complete. Powering VM on."
 
 # Get VM Powerstate Post Snapshot
