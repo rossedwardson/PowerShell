@@ -7,8 +7,10 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 5. Get VM in Rubrik
 6. Take Snapshot
 7. Power on VM vCenter
+8. Query SLA Domains
+9. Assign SLA to Snapshot
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.6
+Rev 1.7
 #>
 
 # Variables
@@ -18,6 +20,7 @@ $CredentialPath = "*.xml"
 $RubrikCredentialPath = "*.xml"
 $LogDirectory = "*\Logs"
 $WantedVMName = "*" # VM to run actions against
+$WantedSLAName = "*" # SLA to Assign to Snapshot
 
 # Script Start
 # Start Timer
@@ -107,7 +110,7 @@ $RubrikPassword = $RubrikCredential.GetNetworkCredential().Password
 
 # Building Rubrik API string & invoking REST API
 $v1BaseURL = "https://" + $RubrikCluster + "/api/v1/"
-# $v2BaseURL = "https://" + $RubrikCluster + "/api/v1/" # Not Needed ATM
+$v2BaseURL = "https://" + $RubrikCluster + "/api/v2/"
 # $InternalURL = "https://" + $RubrikCluster + "/api/internal/"# Not Needed ATM
 $RubrikSessionURL = $v1BaseURL + "session"
 $Header = @{"Authorization" = "Basic "+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($RubrikUser+":"+$RubrikPassword))}
@@ -153,7 +156,7 @@ Try {
     $R1 = Invoke-WebRequest -Uri "$VCURI" -Method 'Get' -Headers $vCSession
     $vCenterVMs = (ConvertFrom-Json $R1.Content).value
 
-        # Filter for wanted VM
+        # Filter for Rubrik-Autotest
         $RubrikVM = ($vCenterVMs | Where-Object {$_.name -eq "$WantedVMName"}).Vm
         $RubrikVM
 }
@@ -265,10 +268,10 @@ $R6ID = $R6Status.ID
     $JobIDURI = "https://" + $RubrikCluster + "/api/v1/event/" + "latest?limit=10" + "&event_type=Backup" + "&object_name=$WantedVMName"
 Do {
     Try {
-        $R7 = Invoke-WebRequest $JobIDURI -Method 'Get' -Headers $RubrikSessionHeader
+        $R7 = Invoke-WebRequest $JobIDURI -Method 'GET' -Headers $RubrikSessionHeader
             # Sleep for 10 seconds Per loop
             Start-Sleep -s "10"
-            Write-Host "Sleeping for 10 seconds til VM is off"
+            Write-Host "Sleeping for 10 seconds til Snapshot is done."
     }
     Catch {
         $ErrorMessage = $_.ErrorDetails; "ERROR: $ErrorMessage"
@@ -331,6 +334,40 @@ Catch {
 }
 $PostState = (ConvertFrom-Json $R10.Content).value
 Write-Host "$WantedVMName is $PostState"
+
+# Assign SLA to snapshot
+    # Query all SLAs
+    # Append URI for upcoming query
+    $QURI = $v2BaseURL + "sla_domain"
+
+    # Get all SLAs
+    $R11 = Invoke-WebRequest -URI $QURI -Method 'GET' -Headers $RubrikSessionHeader
+
+    # Filter for Wanted SLA
+    $R11SLA = (ConvertFrom-Json $R11.Content).Data
+    $SLA = ($R11SLA | Where-Object {$_.name -like $WantedSLAName})
+    $WantedSLAID = $SLA.id
+
+# Apply SLA to Snap from Request 7
+    # Append URI for Snap Apply
+    $AssignSLADomainURL = $v2BaseURL + "sla_domain/" + $WantedSLAID + "/assign"
+
+    # Creating JSON body
+    $SLADomainJSON = "{
+        ""managedIds"": [""$R5VM""]
+    }"
+
+    # Assign SLA
+    Try {
+        $AssignSLADomain = Invoke-RestMethod -Method POST -Uri $AssignSLADomainURL -Body $SLADomainJSON -TimeoutSec 100 -Headers $RubrikSessionHeader -ContentType $Type
+        $ProtectionJob = "SUCCESS"
+    }
+    Catch {
+        $ErrorMessage = $_.ErrorDetails; "ERROR: $ErrorMessage"
+        $ProtectionJob = "FAIL"
+        Write-Host "Error happened in applying SLA"
+    }
+Write-Host "Task: $ProtectionJob"
 
 # Complete
 Write-Host "Script complete"
