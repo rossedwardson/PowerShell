@@ -3,12 +3,22 @@ Add regkey and value
 1. Check for Hive & Create if missing
 2. Set key value
 Ross Edwardson @ CMI/CORA | 10.13.2021
-Rev 1
+Rev 1.1
 #>
+
+# Self-Elevating to run as admin
+If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+{
+  # Relaunch as an elevated process:
+  Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+  exit
+}
+& $ScriptLocation
 
 # Variables
 $RegPath = "*"
 $LogDirectory = "*"
+$ScriptLocation ="*"
 
 # Script Start
 # Start Timer
