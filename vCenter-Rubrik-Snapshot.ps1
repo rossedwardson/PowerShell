@@ -10,7 +10,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 8. Query SLA Domains
 9. Assign SLA to Snapshot
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.7
+Rev 1.8
 #>
 
 # Variables
@@ -39,7 +39,7 @@ IF ($LogFilePathTest -eq $False) {
 $Now = Get-Date
 
 # Creating log file name
-$Log = $LogDirectory + "\PowerOff" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".log"
+$Log = $LogDirectory + "\" + "$WantedVMName" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".log"
 
 # Starting logging
 Start-Transcript -Path $Log -NoClobber
