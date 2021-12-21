@@ -4,16 +4,16 @@ Query Users Mobile Device Exchange
 2. Load EMS.2016 into session
 3. Query Exchange for Mobile Device
 Ross Edwardson @ CORA/CMI | 12.09.2021
-Rev 1.1
+Rev 1.2
 #>
 
 # Variables
-$CSVImport = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Reports\ExchMobile\Techs.csv"
-$CSVPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\CSVs\ExchMobile\ExchMobile.csv"
-$LogPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\Logs\ExchMobile\Log.log"
-$CredPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Temp\SavedCreds_cora_redwardson_DJ-T570.xml"
+$CSVImport = "*\Techs.csv"
+$CSVPath = "*\ExchMobile.csv"
+$LogPath = "*\Log.log"
+$CredPath = "*.xml"
 $Credentials = Import-CliXml -Path "$CredPath"
-$ExchangeURL = 'exchange-2016.cmillc.org'
+$ExchangeURL = '*'
 
 # Start Script
 # Start Timer

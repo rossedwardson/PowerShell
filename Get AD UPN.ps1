@@ -4,13 +4,13 @@ Get AD Users UPN from Full Name
 2. Get UPN
 3. Export to CSV
 Ross Edwardson @ CORA/CMI | 12.21.2021
-Rev 1.0
+Rev 1.2
 #>
 
 # Variables
-$CSVImport = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Reports\AD UPN\Techs.csv"
-$CSVPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\CSVs\AD UPN\ADUPN.csv"
-$LogPath = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\WindowsPowerShell\Scripts\Outputs\Logs\AD UPN\Log.log"
+$CSVImport = "*\Techs.csv"
+$CSVPath = "*\ADUPN.csv"
+$LogPath = "*\Log.log"
 
 # Start Script
 # Start Timer
