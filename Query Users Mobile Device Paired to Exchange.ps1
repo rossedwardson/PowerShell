@@ -4,7 +4,7 @@ Query Users Mobile Device Exchange
 2. Load EMS.2016 into session
 3. Query Exchange for Mobile Device
 Ross Edwardson @ CORA/CMI | 12.09.2021
-Rev 1.0
+Rev 1.1
 #>
 
 # Variables
@@ -25,29 +25,20 @@ Start-Transcript -Path $LogPath -Append
 write-host "Starting transaction log and placing in location $LogPath"
 
 # Import Users from CSV
-$Users = @() -split ","
-$Users = Import-CSV $CSVImport
+$Users = Import-CSV $CSVImport -Header @("First","Last")
 
 # Import AD
 Import-Module ActiveDirectory
 
-# Get SAM
-foreach ($User in $Users) {
-    $FirstName = $($User).First
-    $LastName = $($User).Last
-    $FullName = $FirstName + " " + $LastName
-    $ADUser = get-aduser -filter "Name -like $('$FullName')" -Properties DistinguishedName, SamAccountName | Select-Object -Property DistinguishedName, SamAccountName
-    $SAM = $SAM + $ADUser.SamAccountName
-}
-
-# Load EMS
 $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://$ExchangeURL/PowerShell/ -Authentication Kerberos -Credential $Credentials
 Import-PSSession $Session -DisableNameChecking
 
-# Query Mobile device
-foreach ($User in $SAM) {
-    $MobileDevice = @()
-    $MobileDevice = Get-ActiveSyncDeviceStatistics -Mailbox "$SAM" | Export-CSV -Path $CSVPath -NoTypeInformation -Append -Force
+# Get SAM and Mobile Device
+foreach ($User in $Users) {
+    $FullName = @()
+    $FullName = $User.First + " " + $User.Last
+    $ADUser = get-aduser -filter "Name -like $('$FullName')" -Properties DistinguishedName, SamAccountName | Select-Object -Property DistinguishedName, SamAccountName
+    Get-ActiveSyncDeviceStatistics -Mailbox $($ADUser.SamAccountName) | Export-CSV -Path $CSVPath -NoTypeInformation -Append -Force
 }
 
 # Complete
