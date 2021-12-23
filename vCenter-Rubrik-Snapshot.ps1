@@ -10,7 +10,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 8. Query SLA Domains
 9. Assign SLA to Snapshot
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.8
+Rev 1.9 | 12.23.2021
 #>
 
 # Variables
@@ -20,7 +20,7 @@ $CredentialPath = "*.xml"
 $RubrikCredentialPath = "*.xml"
 $LogDirectory = "*\Logs"
 $WantedVMName = "*" # VM to run actions against
-$WantedSLAName = "*" # SLA to Assign to Snapshot
+$WantedSLAName = "*" # SLA to assign to above VM
 
 # Script Start
 # Start Timer
@@ -88,7 +88,7 @@ Try {
 
     # Setting Token to Session Var
     $vCSession = @{'vmware-api-session-id' = $vCToken}
-    Write-Host "Auth'd to vCenter using "$vCToken"." -BackgroundColor 'DarkGreen' -ForegroundColor 'Black'
+    Write-Host "Auth'd to vCenter using"$vCToken"." -BackgroundColor 'DarkGreen' -ForegroundColor 'Black'
 }
 Catch {
     $ErrorMessage = $_.ErrorDetails; "ERROR: $ErrorMessage"
@@ -360,6 +360,7 @@ Write-Host "$WantedVMName is $PostState"
     # Assign SLA
     Try {
         $AssignSLADomain = Invoke-RestMethod -Method POST -Uri $AssignSLADomainURL -Body $SLADomainJSON -TimeoutSec 100 -Headers $RubrikSessionHeader -ContentType $Type
+        $AssignSLADomain
         $ProtectionJob = "SUCCESS"
     }
     Catch {
@@ -367,7 +368,7 @@ Write-Host "$WantedVMName is $PostState"
         $ProtectionJob = "FAIL"
         Write-Host "Error happened in applying SLA"
     }
-Write-Host "Task: $ProtectionJob"
+Write-Host "Task: Assign $WantedSLAName to"$WantedVMName" = $ProtectionJob. "
 
 # Complete
 Write-Host "Script complete"
