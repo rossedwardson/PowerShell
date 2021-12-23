@@ -5,13 +5,14 @@ Get VM Tags
 3. Export Tags to CSV
 4. Export VMs without Tags to CSV
 Ross Edwardson @ CMI/CORA | 08.05.2021
+Rev 1.3 | 12.23.2021
 #>
 
 # Variables
-$vCenter = "*"
-$LogPath = "*\Log.log"
-$ExportPath = "*\Tags.csv"
-$ExportPath2 = "*\NoTags.csv"
+$vCenters = "*", "*"
+$LogPath = "*.log"
+$ExportPath = "*.csv"
+$ExportPath2 = "*.csv"
 $CredentialPath = "*.xml"
 $RemoteCredential = Import-CliXml -Path "$CredentialPath"
 
@@ -19,8 +20,22 @@ $RemoteCredential = Import-CliXml -Path "$CredentialPath"
 # Start Transcript
 Start-Transcript -path $LogPath
 
-# Connect to vCenter
-connect-viserver "$vCenter" -Credential ($RemoteCredential)
+# Start Timer
+$StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
+$stopwatch.Start()
+
+# Connect to vCenters
+foreach ($vc in $vcenters) 
+{     
+    if( Connect-VIServer -server $vc -Protocol https -Credential $RemoteCredential -ErrorAction Ignore)
+    {        
+        Write-Host "Connected to $vc"  -ForegroundColor Cyan     
+ }
+    else
+  {
+         Write-Host "Failed to Connect to $vc"  -ForegroundColor Cyan
+    }    
+}
 
 # Get VMs
 $VMs = Get-VM | Select-Object Name
@@ -36,5 +51,8 @@ $VMsNoTags = Get-VM | Where-Object {(Get-TagAssignment $_) -eq $null}
 $VMsNoTags | Select-Object Name | Export-CSV -Path $ExportPath2 -NoTypeInformation
 
 # Complete
-Disconnect-VIServer -Confirm:$False
+$StopWatch.Stop()
+$CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
+Write-Host "I took $CreationTime to complete."
+Disconnect-VIServer * -Confirm:$False
 Stop-Transcript
