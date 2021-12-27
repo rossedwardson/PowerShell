@@ -4,7 +4,7 @@ Get AD Users UPN from Full Name
 2. Get UPN
 3. Export to CSV
 Ross Edwardson @ CORA/CMI | 12.21.2021
-Rev 1.2
+Rev 1.3
 #>
 
 # Variables
@@ -30,7 +30,6 @@ Import-Module ActiveDirectory
 # Get UPN
 foreach ($User in $Users) {
     $FullName = @()
-    $ADUPN = @()
     $FullName = $User.First + " " + $User.Last
     get-aduser -filter "Name -like $('$FullName')" -Properties UserPrincipalName | Select-Object -Property UserPrincipalName | Export-CSV -Path $CSVPath -NoTypeInformation -Append -Force
 }
