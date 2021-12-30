@@ -1,10 +1,11 @@
 <#
-User Folder Creation Rev 1.8
+User Folder Creation
 1. Get User from Read Host.
 2. Check User Folder
 3. Create User Folder
 4. Assign Full Permissions to Users Folder to only User
 Ross Edwardson @ CORA/CMI | 04.02.2021
+Rev 1.9 | Fixed error with filtering users who have a distinction in their name - eg Joe Doe, M.D.
 #>
 
 # Variables
@@ -28,11 +29,11 @@ $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
 $stopwatch.Start()
 
 # Start Transcript
-Start-Transcript -path $LogLocation
+Start-Transcript -path $LogLocation -Append
 
 # Verify no PSDrives exist for upcoming operations.
 $PSDrive = @(Get-SMBMapping)
-if (($PSDrive).RemotePath -like "$FolderPath\*") {
+if (($PSDrive).RemotePath -like "\\dorado\users\*") {
     write-host "PSDrive $PSDriveName does exist. Moving on."  
 }
 else {
@@ -54,13 +55,13 @@ until ($uinput -eq '')
 # Get Users SamAccount Name/s
 $SAM = @()
 $SAM = ForEach ($User in $UserNames) {
-    get-aduser -filter "Name -like $('$User')" -Properties DistinguishedName, SamAccountName | Select-Object -Property DistinguishedName, SamAccountName
+    get-aduser -filter "Name -like '$("*$User*")'" -Properties DistinguishedName, SamAccountName | Select-Object -Property DistinguishedName, SamAccountName
 }
 
 # Create Folder
 foreach ($User in $SAM) {
     try {
-        $FullPath = -join("$FolderPath", "$($User.SamAccountName)")
+        $FullPath = -join("$FolderPath", "\", "$($User.SamAccountName)")
         New-Item -Path $FullPath -ItemType $PathType -Force
         write-host "Creating Folder @ $($FullPath)"
         $IdentityReference = $($User.SamAccountName)
@@ -70,7 +71,7 @@ foreach ($User in $SAM) {
         $ACL | Set-ACL $FullPath
     }
     catch {
-        write-host "Error Happened somewhere in this try statement."
+        write-host "Error Happened somewhere in this create folder statement."
     }
 }
 
