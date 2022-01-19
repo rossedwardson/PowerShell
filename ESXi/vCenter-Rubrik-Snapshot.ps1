@@ -10,7 +10,7 @@ Shutdown and Power On VM using vCenter's API's & Take Snapshot using Rubrik's AP
 8. Query SLA Domains
 9. Assign SLA to Snapshot
 Ross Edwardson @ CMI/CORA | 09.23.2021
-Rev 1.9 | 12.23.2021
+Rev 1.10 | 01.19.2022
 #>
 
 # Variables
@@ -43,6 +43,10 @@ $Log = $LogDirectory + "\" + "$WantedVMName" + "_" + $Now.ToString("yyyy-MM-dd")
 
 # Starting logging
 Start-Transcript -Path $Log -NoClobber
+
+# Timestamp for log
+$Now2 = Get-Date -Format "dddd MM/dd/yyyy HH:mm"
+Write-Host "$Now2"
 
 # Import Modules
 Import-Module Rubrik
@@ -372,6 +376,8 @@ Write-Host "Task: Assign $WantedSLAName to"$WantedVMName" = $ProtectionJob. "
 
 # Complete
 Write-Host "Script complete"
+$Now3 = Get-Date -Format "dddd MM/dd/yyyy HH:mm"
+Write-Host "$Now3"
 $StopWatch.Stop()
 $CreationTime = [math]::Round(($StopWatch.Elapsed).TotalMinutes ,2)
 Write-Host "I took $CreationTime to complete."
