@@ -5,25 +5,31 @@ Send Password Expiry E-Mails
 3. Perform magic on data to get correct emails
 4. Send emails
 Ross Edwardson @ CMI/CORA | 2.21.2022
-Rev 1
+Rev 1.2
 #>
 
+# Varibles
 $testing = $true
-$SearchBase="OU=PolicyTest,OU=Information Technology,OU=Accounts,DC=cmillc,DC=org"
-$ExcludeList="'New Employees'|'Separated Employees'"   #in the form of "SubOU1|SubOU2|SubOU3" -- possibly needing single quote for OU's with spaces, separate OU's with pipe and double-quote the list.
-$smtpServer="exchange-2016.cmillc.org"
+$logging = $true
+$ADServer = "*" # If running cross forests
+$CredentialPath = "*.xml" # If running cross forests
+$RemoteCredential = Import-CliXml -Path "$CredentialPath" # If running cross forests
+$SearchBase = "*"
+$ExcludeList = "'New Employees'|'Separated Employees'"   #in the form of "SubOU1|SubOU2|SubOU3" -- possibly needing single quote for OU's with spaces, separate OU's with pipe and double-quote the list.
+$smtpServer = "*"
 $expireindays = 7 #number of days of soon-to-expire paswords. i.e. notify for expiring in X days (and every day until $negativedays)
 $negativedays = -3 #negative number of days (days already-expired). i.e. notify for expired X days ago
-$from = "Ross Edwardson <redwardson@cmillc.org>"
-$logging = $true
+$from = "*"
 $logNonExpiring = $true
-$logFile = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\GitHub\WIP\WIP\Email Users Who expire\Log\PS-pwd-expiry.csv"
-$Transcript = "C:\Users\redwardson\OneDrive - CENTRAL OREGON RADIOLOGY AS\Documents\GitHub\WIP\WIP\Email Users Who expire\Log\PS-pwd-expiry.log"
-$adminEmailAddr = "redwardson@cmillc.org"
-$sampleEmails = 3 #number of sample email to send to adminEmailAddr when testing ; in the form $sampleEmails="ALL" or $sampleEmails=[0..X] e.g. $sampleEmails=0 or $sampleEmails=3 or $sampleEmails="all" are all valid.
+$logFile = "*.csv"
+$Transcript = "*.log"
+$adminEmailAddr = "*","*","*"
+$sampleEmails = 3 #number of sample email to send to adminEmailAddr when testing
 
+
+# Script Start
 # System Settings
-Start-Transcript $Transcript
+Start-Transcript -Path $Transcript -Append
 # Start Timer
 $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $stopwatch.Start()
@@ -38,10 +44,10 @@ Write-Host "Testing Mode: $testing"
 Import-Module ActiveDirectory
 Write-Host "Gathering User List"
 # $Users = @{}
-$users = get-aduser -SearchBase $SearchBase -Filter {(enabled -eq $true) -and (passwordNeverExpires -eq $false)} -properties sAMAccountName, displayName, PasswordNeverExpires, PasswordExpired, PasswordLastSet, EmailAddress, lastLogon, whenCreated, Info
+$users = get-aduser -Server $ADServer -Credential $RemoteCredential -SearchBase $SearchBase -Filter {(enabled -eq $true) -and (passwordNeverExpires -eq $false)} -properties sAMAccountName, displayName, PasswordNeverExpires, PasswordExpired, PasswordLastSet, EmailAddress, lastLogon, whenCreated, Info
 Write-Host "Filtering User List"
 $users = $users | Where-Object {$_.DistinguishedName -notmatch $ExcludeList}
-$DefaultmaxPasswordAge = (Get-ADDefaultDomainPasswordPolicy).MaxPasswordAge
+$DefaultmaxPasswordAge = (Get-ADDefaultDomainPasswordPolicy -Server $ADServer).MaxPasswordAge
 
 $countprocessed=${users}.Count
 $samplesSent=0
@@ -86,7 +92,7 @@ foreach ($user in $users) {
     $sent = "" # Reset Sent Flag
     $Info = $User.Info
 
-    $PasswordPol = (Get-AduserResultantPasswordPolicy $user)
+    $PasswordPol = (Get-AduserResultantPasswordPolicy -Server $ADServer -Credential $RemoteCredential $user)
     # Check for Fine Grained Password
     if (($PasswordPol) -ne $null) {
         $maxPasswordAge = ($PasswordPol).MaxPasswordAge
@@ -125,16 +131,15 @@ foreach ($user in $users) {
     }
 
     # Email Subject Set Here
-    $subject="Your password $messageDays"
+    $subject="Your DRS274 password $messageDays"
 
     # Email Body Set Here, Note You can use HTML, including Images.
     $body="
-    <p>Your Active Directory password for your <b>$sName</b> account $messageDays.  After expired, you will not be able to login until your password is changed.</p>
-    <p>Please visit selfservice.example.com to change your password.  Alternatively, on a Windows machine, you may press Ctrl-Alt-Del and select `"Change Password`".</p>
-    <p>If you do not know your current password, <a href='https://selfservice.example.com/?action=sendtoken'>click here to email a password reset link</a>.</p>
-    Example.com Administrator<br>
-    Administrator@example.com<br>
-    www.example.com/support/<br>
+    <p>This is a test. This script will trigger if your password expires in 7 days or less.</p>
+    <p>Your Active Directory password for your account <b>$sName</b> $messageDays.  After expired, you will not be able to login until your password is changed.</p>
+    <p>More info to be placed here.</p>
+    Thanks<br>
+    Ross' Powershell Script<br>
     </p>
     "
 
@@ -193,8 +198,8 @@ foreach ($user in $users) {
             Add-Content $logfile "`"$date`",`"$sName`",`"$dName`",`"$whencreated`",`"$passwordSetDate`",`"$daystoExpire`",`"$expireson`",`"$emailaddress`",`"$sent`",`"$Info`",`"$UserSplit`",`"$UserEFinalFind`""
         }
     }
-}
-#} # End User Processing
+
+} # End User Processing
 
 $endtime=Get-Date
 $totaltime=($endtime-$starttime).TotalSeconds
