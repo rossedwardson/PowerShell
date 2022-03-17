@@ -13,7 +13,7 @@ Rev 1 | Release
 # Variables
 $LogDirectory = "*"
 $BackupPath = "*"
-$BRMEWOUs = @()
+$OUs = @()
 $OUs += [PSCustomObject]@{
     SearchBase = '*'
 } # Enter in OU to Query
@@ -63,7 +63,7 @@ $Computers = @(foreach ($OU in $OUs.SearchBase) {
 })
 
 # Backup computers before change
-$BackupFile = $BackupPath + "AttributeUpdate" + "_" + "BeforeChange" + "_" + "FileName" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".csv"
+$BackupFile = $BackupPath + "AttributeUpdate" + "_" + "BeforeChange" + "_" + "ValueName" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".csv"
 $FilterComputers | Export-CSV -Path $BackupFile -NoTypeInformation -Force
 
 # Set extensionAttribute
@@ -79,7 +79,7 @@ $ChangedCheck = @(foreach ($Computer in $FilterComputers) {
 })
 
 # Export to CSV
-$ExportFile = $BackupPath + "AttributeUpdate" + "_" + "AfterChange" + "_" + "FileName" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".csv"
+$ExportFile = $BackupPath + "AttributeUpdate" + "_" + "AfterChange" + "_" + "ValueName" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + ".csv"
 $ChangedCheck | Export-CSV -Path $ExportFile -NoTypeInformation -Force
 
 # Start AlertMedia CMD Sync
