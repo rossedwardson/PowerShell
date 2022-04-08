@@ -2,7 +2,7 @@
 Get SID and  SID History
 1. Get AD Users that are enabled based off OU Search Path
 2. Filter Output for Name, SAM, SID, and SID History
-3. Export
+3. Export to CSV
 Ross Edwardson @ CMI/CORA | 04.08.2022
 Rev 1
 #>
