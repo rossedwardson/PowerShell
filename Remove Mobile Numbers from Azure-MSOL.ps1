@@ -2,9 +2,10 @@
 Remove Mobile Telephone Numbers from O365
 1. Connect to AzureAD
 2. Get all active users
-3. Filter for Mobile Numbers in "x***" format
-4. Connect to MSOL
-5. Set MSOLUser -Mobile "$Null"
+3. Filer for Mobile numbers like 'PAGE
+4. Filter for Mobile Numbers in "x***" format
+5. Connect to MSOL
+6. Set MSOLUser -Mobile "$Null"
 Ross Edwardson @ CMI/CORA | 10.11.2022
 #>
 
@@ -24,7 +25,7 @@ write-host "Starting transaction log and placing in location $LogPath"
 # Connect to Azure AD
 Connect-AzureAD
 
-# Connect to MSOL as we can't use AzureAD due to ADSync
+# Connect to MSOL
 Connect-MsolService
 
 # Get Active Users in AzureAD
@@ -52,13 +53,16 @@ catch {
     Write-Host $ErrorMessage -ForegroundColor red
 }
 
-# Filter for user WITH Mobiles like "x***"
-$FMUser = $Muser | where {$_.Mobile -ne $Null -AND $_.Mobile -ne 'PAGE' -AND $_.Mobile -notlike "x***"}
+# Filter for Page + Mobile numbers like "x***"
+$NUser = $Muser | where {$_.Mobile -ne $Null}
+$PUser = $Nuser | Where {$_.Mobile -like 'PAGE'}
+$Ruser = $Nuser | where {$_.Mobile -like "x***"}
+$FMuser = $Ruser + $Puser
 
 # Backup Users before Change
 $FMUser | Export-CSV -Path $BackupPath
 
-# Set FMUsers Mobile to "$Null"
+# Set FMUsers Mobile to $Null
 try {
     foreach ($User in $FMUser) {
         set-msoluser -UserPrincipalName $User.UserPrincipalName -Mobile "$null"
