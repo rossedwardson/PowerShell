@@ -33,7 +33,8 @@ try {
     $Users | Select-Object UserPrincipalName
 }
 catch {
-    Write-Error "Get ADUsers Failed"
+    $ErrorMessage = $_.Exception.Message
+    Write-Host $ErrorMessage -ForegroundColor red
 }
 finally {
     $iCountUsers = $Users.Count
@@ -47,7 +48,8 @@ try {
     }
 }
 catch {
-    Write-Host "Error happened in UPN & Mobile"
+    $ErrorMessage = $_.Exception.Message
+    Write-Host $ErrorMessage -ForegroundColor red
 }
 
 # Filter for user WITH Mobiles like "x***"
@@ -63,7 +65,8 @@ try {
     }
 }
 catch {
-    Write-Host "Error happened during clear of Mobile"
+    $ErrorMessage = $_.Exception.Message
+    Write-Host $ErrorMessage -ForegroundColor red
 }
 
 # Complete
