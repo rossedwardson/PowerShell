@@ -3,6 +3,7 @@ Set all active users password change to false
 1. Get active users
 2. Set active users change password to false
 Ross Edwardson @ CMI/CORA | 10.31.22
+Rev 1.1
 #>
 
 # Variables
@@ -35,7 +36,7 @@ Start-Transcript -Path $Log -NoClobber
 $EnabledUsers = @(Get-ADUser -Server $DC -Credential $RemoteCredential -SearchBase "$SearchPath" -Properties UserPrincipalName -filter {Enabled -eq $true})
 
 # Set EnabledUsers change password false
-Foreach ($User in ($EnabledUsers).UserPrincipalName) {
+Foreach ($User in ($EnabledUsers).SamAccountName) {
     try {
         set-aduser $User -ChangePasswordAtLogon $false
     }
