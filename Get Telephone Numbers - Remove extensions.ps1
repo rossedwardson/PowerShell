@@ -28,7 +28,6 @@ $PPath = "*\PUsers.csv"
 $RPath = "*\RUsers.csv"
 $BackupPathAfter = "*\Removal_After.csv"
 
-
 # Script Start
 # Start Timer
 $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
@@ -72,17 +71,6 @@ $PUsers | Export-CSV -Path $PPath -NoTypeInformation -Force
 # Filter x*** and export
 $RUsers = $NUsers | where {$_.Phone -like "x***"}
 $RUsers | Export-CSV -Path $RPath -NoTypeInformation -Force
-
-# Clear PageFiltered values to ADUser. Can't Set value to $Null, can only clear.
-try {
-    foreach ($PFuser in $PageFiltered) {
-        Set-Aduser -Identity $PFUser.Name -Server $DC -Credential $Credentials -Clear TelephoneNumber
-    }
-}
-catch {
-    $ErrorMessage = $_.Exception.Message
-    Write-Host $ErrorMessage -ForegroundColor red
-}
 
 # Modify RUsers Phone to match standard
 $RFUsers = @{}
@@ -128,6 +116,17 @@ $FINALFRFUsers = try {
             'Phone' = $FFRFUser.Phone -replace '[ ]',''
         }       
         write-output (New-Object -TypeName PSObject -Property $FINALFRFUsers)
+    }
+}
+catch {
+    $ErrorMessage = $_.Exception.Message
+    Write-Host $ErrorMessage -ForegroundColor red
+}
+
+# Clear PageFiltered values to ADUser. Can't Set value to $Null, can only clear.
+try {
+    foreach ($PFuser in $PageFiltered) {
+        Set-Aduser -Identity $PFUser.Name -Server $DC -Credential $Credentials -Clear TelephoneNumber
     }
 }
 catch {
