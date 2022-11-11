@@ -104,7 +104,7 @@ $RFUsers = try {
     }
 }    
 catch {
-    $ErrorMessage = $_.Exception.Message
+    $ErrorMessage = $_.Exception.MessageFinalUser
     Write-Host $ErrorMessage -ForegroundColor red
 }
 
@@ -126,15 +126,15 @@ catch {
 }
 
 # Remove Spaces from FRFUsers Phones
-$FINALFRFUsers = @{}
-$FINALFRFUsers = try {
+$FinalFRFUsers = @{}
+$FinalFRFUsers = try {
     foreach ($FFRFUser in $FRFUsers) {
-        $FINALFRFUsers = [ordered]@{
+        $FinalFRFUsers = [ordered]@{
             'Name' = $FFRFUser.Name
             'DName' = $FFRFUser.DName
             'Phone' = $FFRFUser.Phone -replace '[ ]',''
         }       
-        write-output (New-Object -TypeName PSObject -Property $FINALFRFUsers)
+        write-output (New-Object -TypeName PSObject -Property $FinalFRFUsers)
     }
 }
 catch {
@@ -143,9 +143,9 @@ catch {
 }
 
 # Output HashTables before AD Change
-$CSVFINALFRFUsers = $FINALFRFUsers
-[PSCustomObject]$CSVFINALFRFUsers | ConvertTo-CSV -NoTypeInformation -ErrorAction SilentlyContinue
-$CSVFINALFRFUsers | Export-CSV -Path $FINALFRFUsersPath -NoTypeInformation -Force -ErrorAction SilentlyContinue
+$CSVFinalFRFUsers = $FinalFRFUsers
+[PSCustomObject]$CSVFinalFRFUsers | ConvertTo-CSV -NoTypeInformation -ErrorAction SilentlyContinue
+$CSVFinalFRFUsers | Export-CSV -Path $FinalFRFUsersPath -NoTypeInformation -Force -ErrorAction SilentlyContinue
 
 # Clear PageFiltered values to ADUser. Can't Set value to $Null, can only clear.
 try {
@@ -158,10 +158,10 @@ catch {
     Write-Host $ErrorMessage -ForegroundColor red
 }
 
-# Set FINALFRFUsers values to AD
+# Set FinalFRFUsers values to AD
 try {
-    foreach ($FINALUSER in $FINALFRFUsers) {
-        set-aduser -Identity $FINALUser.Name -Server $DC -Credential $Credentials -replace @{TelephoneNumber=$($FinalUser.Phone)}
+    foreach ($FinalUser in $FinalFRFUsers) {
+        set-aduser -Identity $FinalUser.Name -Server $DC -Credential $Credentials -replace @{TelephoneNumber=$($FinalUser.Phone)}
     }
 }
 catch {
