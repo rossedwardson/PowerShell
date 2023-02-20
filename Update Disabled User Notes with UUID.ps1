@@ -2,11 +2,13 @@
 Update Disabled User Notes with ME UUID
 1. Import CSV with users disabled
 2. Get UUID from csv
-3. Get Users and export old notes
-4. Create hash to update notes correctly
-5. Update Notes
-6. Export users and notes changed
+3. Get Users and export old notes and groups
+4. Create hash to export memberOf correctly
+5. Create hash to update notes correctly
+6. Update Notes
+7. Export users and notes changed
 Ross Edwardson @ CMI/CORA | 01.25.2023
+Rev 1.1 - Added backup up for groups
 #>
 
 # Variables
@@ -63,7 +65,7 @@ $ST = $T2.Replace(":",".")
 # Get old notes
 $Users = @()
 foreach ($User in $CSV) { 
-    $Users += get-aduser -Server $DC -Credential $RemoteCredential -Identity $User.ObjectName -Properties SamAccountName, Info | Select-Object -Property SamAccountName, info
+    $Users += get-aduser -Server $DC -Credential $RemoteCredential -Identity $User.ObjectName -Properties SamAccountName, Info, MemberOf | Select-Object -Property SamAccountName, info, @{Name="MemberOf";Expression={$_.MemberOf -Join ";"}}
 }
 
 # Create CSV File Name
@@ -72,10 +74,22 @@ $BackupBeforeCSVName = "ME_DU-BC" + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $N
 # Create full backup path
 $BackupBeforeCSV = $ExportPath + $BackupBeforeCSVName
 
-# Export users before change
-$Users | Export-CSV $BackupBeforeCSV -NoTypeInformation
+# Create Hash with Group info
+$GroupUserHash = foreach ($User in $Users) {
+    $GroupUserHash = [ordered]@{
+        'Name' = $User.SamAccountName
+        'Info' = $User.Info
+        'Group' = $User.MemberOf
+    }
+    Write-Output (New-Object -TypeName PSObject -Property $GroupUserHash)
+}
 
-# Create Hash
+# Convert Hash to CSV and export
+$CSVUsers = $GroupUserHash
+[PSCustomObject]$CSVUsers | ConvertTo-CSV -NoTypeInformation
+$CSVUsers | Export-CSV -Path $BackupBeforeCSV -NoTypeInformation -Force -ErrorAction SilentlyContinue
+
+# Create Hash for updated Notes
 $FilteredUsers = foreach ($User in $Users) {
     $FilteredUsers = [ordered]@{
     'Name' = $User.SamAccountName;
