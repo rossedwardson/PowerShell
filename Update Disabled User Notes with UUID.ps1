@@ -1,23 +1,26 @@
 <#
 Update Disabled User Notes with ME UUID
-1. Import CSV with users disabled
-2. Get UUID from csv
+1. Import XLSX
+2. Extract usable data
 3. Get Users and export old notes and groups
 4. Create hash to export memberOf correctly
 5. Create hash to update notes correctly
 6. Update Notes
 7. Export users and notes changed
+8. Rename and Move Completed AuditReport
 Ross Edwardson @ CMI/CORA | 01.25.2023
 Rev 1.1 - Added backup up for groups
+Rev 1.2 - Updated xlsx I&E, and report cleanup to streamline the workflow | 01.02.2024
 #>
 
 # Variables
 $DC = "*"
 $CSVPath = "*"
 $LogDirectory = "*"
-$LogName = "*"
+$LogName = "ME_DU"
 $ExportPath = "*"
-$CredentialPath = "*.xml"
+$CompleteCSVPath = "*"
+$CredentialPath = "*"
 $RemoteCredential = Import-CliXml -Path "$CredentialPath"
 
 # Start Script
@@ -44,16 +47,25 @@ $Log = $LogDirectory + $LogName + "_" + $Now.ToString("yyyy-MM-dd") + "@" + $Now
 Start-Transcript -Path $Log -NoClobber
 
 # Get CSV from Path
-$CSVFile = Get-Childitem -Path $CSVPath | where {($_ -like "*.csv")}
-
-# Create correct full path for import
-$CSVFP = $CSVPath + $CSVFile
+$CSVFile = Get-Childitem -Path $CSVPath | where {($_ -like "*.xlsx")}
 
 # Import CSV and select username for backup
-$CSV = Import-CSV -Path $CSVFP
+$CSV = Import-Excel -Path $CSVFile -NoHeader
+
+# Remove $null spaces
+$CleanCSV = $CSV | Where-Object {$_.P8 -ne $null}
+
+# Select the columns we want
+$RevisedCSV = $CleanCSV | Select P8, P9
+
+# Remove un-needed first line
+$ReRevisedCSV = $RevisedCSV | Select -skip 1
+
+# Rename columns to something useable
+$FilterCols = $ReRevisedCSV | Select -Property @{label="ActionTime";expression={$($_.P8)}},@{label="ObjectName";expression={$($_.P9)}}
 
 # Get UUID from ActionTime and remove newline break
-$T = $CSV.ActionTime -replace "\n",''
+$T = $FilterCols.ActionTime # -replace "\n",''
 
 # Select first result, only need 1
 $T1 = $T[0]
@@ -64,7 +76,7 @@ $ST = $T2.Replace(":",".")
 
 # Get old notes
 $Users = @()
-foreach ($User in $CSV) { 
+foreach ($User in $FilterCols) { 
     $Users += get-aduser -Server $DC -Credential $RemoteCredential -Identity $User.ObjectName -Properties SamAccountName, Info, MemberOf | Select-Object -Property SamAccountName, info, @{Name="MemberOf";Expression={$_.MemberOf -Join ";"}}
 }
 
@@ -117,6 +129,13 @@ $BackupAfterCSV = $ExportPath + $BackupAfterCSVName
 
 # Export users after change
 $ChangedUsers | Export-CSV $BackupAfterCSV -NoTypeInformation
+
+#Rename AuditReport
+$CompletedFileName = "AuditReportCompleted" + "@" + $Now.ToString("yyyy-MM-dd") + "@" + $Now.ToString("HH-mm-ss") + "_" +"UUID_$ST" + ".xlsx"
+Rename-Item $CSVFile -NewName $CompletedFileName
+
+# Move AuditReport
+Get-Childitem -Path $CSVPath | where {($_ -like "*.xlsx")} | Move-Item -Destination $CompleteCSVPath
 
 # Complete
 Write-Host "Script complete."
